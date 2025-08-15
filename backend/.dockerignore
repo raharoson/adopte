@@ -1,0 +1,32 @@
+# Git
+.git
+.gitignore
+
+# Docker
+docker-compose.yml
+docker-compose.yaml
+Dockerfile
+.dockerignore
+
+# IDE
+.idea
+.vscode
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+var/log/
+var/cache/
+
+# Dependencies
+node_modules/
+
+# Documentation
+README.md
+
+# Environment
+.env.local
+.env.test
+.env.*.local

@@ -1,0 +1,94 @@
+services:
+  # PHP/Symfony Service
+  php-app:
+    build:
+      context: ./backend
+      dockerfile: ./docker/php/Dockerfile
+    container_name: microservice-php-app
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      - ./backend:/var/www/html
+      - ./backend/docker/php/php.ini:/usr/local/etc/php/conf.d/custom.ini
+    networks:
+      - microservice-network
+    depends_on:
+      - mysql
+      - redis
+
+  # Node.js Service
+  nodejs-app:
+    build:
+      context: ./nodejs
+      dockerfile: ./docker/Dockerfile
+    container_name: microservice-nodejs-app
+    restart: unless-stopped
+    working_dir: /app
+    volumes:
+      - ./nodejs:/app
+      - /app/node_modules
+    ports:
+      - "3001:3000"
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+    networks:
+      - microservice-network
+    depends_on:
+      - mysql
+      - redis
+
+  # Nginx Service
+  nginx:
+    image: nginx:alpine
+    container_name: microservice-nginx
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - ./backend:/var/www/html
+      - ./backend/docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - microservice-network
+    depends_on:
+      - php-app
+
+  # MySQL Service
+  mysql:
+    image: mysql:8.0
+    container_name: microservice-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-microservice}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      MYSQL_USER: ${MYSQL_USER:-user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-password}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - microservice-network
+
+  # Redis Service
+  redis:
+    image: redis:7-alpine
+    container_name: microservice-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - microservice-network
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-redis123}
+
+volumes:
+  mysql_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  microservice-network:
+    driver: bridge
