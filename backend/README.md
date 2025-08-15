@@ -1,231 +1,145 @@
-# Microservice Symfony avec Docker
+# Application de Gestion d'Abonnements
 
-Un microservice léger basé sur Symfony 6.4 avec Docker (Nginx, PHP 8.1, MySQL 8.0).
-**Sans ORM** : Utilise PDO natif pour les opérations de base de données.
+Application Symfony 6.4 de gestion d'abonnements avec MySQL et templates Twig.
 
-## 🚀 Démarrage rapide
+## Installation et Lancement
 
 ### Prérequis
-- Docker
-- Docker Compose
-- Make (optionnel, pour les raccourcis)
+- PHP 8.1+
+- Composer
+- MySQL
 
 ### Installation
 
-1. **Cloner le projet** (si applicable)
+1. **Installer les dépendances**
 ```bash
-git clone <repository-url>
-cd backend
+composer install
 ```
 
-2. **Construire les images Docker**
-```bash
-make build
-# ou
-docker-compose build
+2. **Configurer la base de données**
+
+Modifier le fichier `.env` avec vos paramètres :
 ```
-
-3. **Démarrer les services**
-```bash
-make up
-# ou
-docker-compose up -d
-```
-
-4. **Vérifier que tout fonctionne**
-```bash
-curl http://localhost:8080/api/
-curl http://localhost:8080/api/health
-```
-
-## 🐳 Services Docker
-
-- **Nginx** : Port 8080 → Serveur web
-- **PHP 8.1-FPM** : Application Symfony
-- **MySQL 8.0** : Port 3306 → Base de données
-
-## 📋 Commandes utiles
-
-### Avec Make (recommandé)
-```bash
-make help              # Voir toutes les commandes
-make build              # Construire les images
-make up                 # Démarrer les containers
-make down               # Arrêter les containers
-make logs               # Voir les logs
-make bash               # Accéder au container PHP
-make mysql-cli          # Accéder à MySQL
-make cache-clear        # Vider le cache Symfony
-make composer-install   # Installer les dépendances
-```
-
-### Avec Docker Compose
-```bash
-docker-compose build
-docker-compose up -d
-docker-compose down
-docker-compose logs -f
-docker-compose exec app bash
-docker-compose exec mysql mysql -u root -p
-```
-
-## 🌐 URLs d'accès
-
-- **API principale** : http://localhost:8080/api/
-- **Health check** : http://localhost:8080/api/health
-- **Test base de données** : http://localhost:8080/api/database
-- **Exemple PDO (users)** : http://localhost:8080/api/users
-
-## 📁 Structure du projet
-
-```
-.
-├── docker/
-│   ├── nginx/
-│   │   └── default.conf    # Configuration Nginx
-│   └── php/
-│       ├── Dockerfile      # Image PHP 8.1
-│       └── php.ini         # Configuration PHP
-├── src/
-│   └── Controller/
-│       └── ApiController.php
-├── docker-compose.yaml     # Configuration Docker
-├── Makefile               # Raccourcis de commandes
-└── README.md
-```
-
-## 🔧 Configuration
-
-### Variables d'environnement (.env)
-```
+# Base de données
+MYSQL_HOST=127.0.0.1
+MYSQL_PORT=3306
 MYSQL_DATABASE=microservice
-MYSQL_ROOT_PASSWORD=root
 MYSQL_USER=user
 MYSQL_PASSWORD=password
-DATABASE_URL=mysql://user:password@mysql:3306/microservice
+
+# API de paiement
+PAYMENT_API_URL=http://adopteundev.adopteunmec.com:3042
 ```
 
-### Ports utilisés
-- **8080** : Nginx (HTTP)
-- **3306** : MySQL
+3. **Initialiser la base de données**
 
-## 🛠️ Développement
-
-### Ajouter des dépendances
+**Option A : Script automatique (recommandé)**
 ```bash
-make bash
-composer require <package-name>
+# Utiliser le script d'initialisation
+./scripts/init_db.sh
+
+# Ou avec des paramètres personnalisés
+./scripts/init_db.sh [nom_base] [utilisateur_mysql] [mot_de_passe]
 ```
 
-### Vider le cache
+**Option B : Initialisation manuelle**
 ```bash
-make cache-clear
+# Créer la base de données
+mysql -u root -p -e "CREATE DATABASE microservice;"
+
+# Initialiser les tables et données
+mysql -u root -p microservice < sql/init_database.sql
 ```
 
-### Accéder aux logs
-```bash
-make logs-app     # Logs PHP
-make logs-nginx   # Logs Nginx
-make logs-mysql   # Logs MySQL
-```
-
-## 🧪 Tests
-
-Pour les tests (quand configurés) :
-```bash
-make test
-```
-
-## 🗃️ Base de données
-
-### Accéder à MySQL
-```bash
-make mysql-cli
-# Mot de passe : root
-```
-
-### Connexion depuis l'extérieur
-- **Host** : localhost
-- **Port** : 3306
-- **User** : user
-- **Password** : password
-- **Database** : microservice
-
-### Architecture sans ORM
-
-Ce microservice **n'utilise pas Doctrine ORM** mais PDO natif pour une approche plus légère et performante :
-
-#### Avantages :
-- ✅ Performance optimale
-- ✅ Contrôle total des requêtes SQL
-- ✅ Empreinte mémoire réduite
-- ✅ Pas de mapping objet-relationnel complexe
-- ✅ Idéal pour les microservices
-
-### Utilisation de PDO
-
-Le microservice inclut une classe `DatabaseService` pour les opérations PDO :
-
-```php
-use App\Service\DatabaseService;
-
-$db = new DatabaseService();
-
-// Test de connexion
-$isConnected = $db->testConnection();
-
-// Exécuter une requête SELECT
-$users = $db->query('SELECT * FROM users WHERE active = ?', [1]);
-
-// Exécuter une requête INSERT/UPDATE/DELETE
-$success = $db->execute('INSERT INTO users (name, email) VALUES (?, ?)', ['John', 'john@example.com']);
-```
-
-**Endpoints disponibles :**
-
-### Authentification
-- `POST /api/auth/login` - Connexion utilisateur
-- `POST /api/auth/register` - Inscription utilisateur
-- `POST /api/auth/logout` - Déconnexion
-- `POST /api/auth/refresh` - Rafraîchir le token JWT
-
-### Utilisateurs
-- `GET /api/users` - Liste paginée des utilisateurs
-- `GET /api/users/search` - Rechercher des utilisateurs avec filtres
-- `GET /api/users/{id}` - Récupérer le profil d'un utilisateur
-- `PUT /api/users/{id}` - Mettre à jour le profil utilisateur
-
-### Matches & Swipes
-- `POST /api/swipes` - Swiper sur un utilisateur (like/dislike)
-- `GET /api/matches` - Liste des matches de l'utilisateur connecté
-- `GET /api/matches/{id}` - Détails d'un match spécifique
-
-### Utilitaires
-- `GET /api/health` - Vérification de l'état de l'API
-- `GET /api/database` - Test de connexion à MySQL
-
-## 🧹 Nettoyage
+### Lancement
 
 ```bash
-make clean    # Nettoyer containers et volumes
-make rebuild  # Reconstruire tout à zéro
+# Démarrer le serveur de développement
+php -S localhost:8000 -t public/
 ```
 
-## 🚨 Dépannage
+### Accès à l'application
 
-### Les containers ne démarrent pas
-```bash
-docker-compose down
-docker-compose build --no-cache
-docker-compose up -d
+- **Page de souscription** : http://localhost:8000/subscribe
+- **Gestion du profil** : http://localhost:8000/profile
+- **Administration** : http://localhost:8000/admin/users
+
+### Base de données
+
+**Connexion MySQL :**
+- Host : 127.0.0.1
+- Port : 3306
+- User : user
+- Password : password
+- Database : microservice
+
+#### Structure des tables
+
+```sql
+-- Utilisateurs
+CREATE TABLE users (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  email VARCHAR(255) UNIQUE NOT NULL,
+  api_user_id INT NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT NULL
+);
+
+-- Types d'abonnements disponibles
+CREATE TABLE subscriptions (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  price DECIMAL(10,2) NOT NULL,
+  period_days INT NOT NULL,           -- Fréquence de paiement (ex: 30 jours)
+  engagement_months INT NOT NULL,     -- Durée minimale d'engagement
+  auto_renew TINYINT(1) DEFAULT 1     -- Reconduction tacite
+);
+
+-- Abonnements des utilisateurs
+CREATE TABLE user_subscriptions (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  subscription_id INT NOT NULL,
+  start_date DATE NOT NULL,
+  next_payment_date DATE NOT NULL,
+  end_engagement_date DATE NOT NULL,
+  active TINYINT(1) DEFAULT 1,
+  FOREIGN KEY (user_id) REFERENCES users(id),
+  FOREIGN KEY (subscription_id) REFERENCES subscriptions(id)
+);
+
+-- Historique des transactions
+CREATE TABLE transactions (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  amount DECIMAL(10,2) NOT NULL,
+  external_transaction_id VARCHAR(100) NOT NULL,
+  date DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id)
+);
 ```
 
-### Vérifier les logs
-```bash
-make logs
+#### Données d'exemple
+
+```sql
+-- Types d'abonnements
+INSERT INTO subscriptions (name, price, period_days, engagement_months, auto_renew) VALUES
+('Basique', 9.99, 30, 1, 1),   -- 1 mois d'engagement
+('Premium', 19.99, 30, 3, 1),  -- 3 mois d'engagement  
+('VIP', 39.99, 30, 6, 1);      -- 6 mois d'engagement
 ```
 
-### Problème de permissions
-```bash
-sudo chown -R $(id -u):$(id -g) ./
-```
+### 📁 Scripts et fichiers utiles
+
+- **`sql/init_database.sql`** : Script SQL complet d'initialisation (tables + données)
+- **`scripts/init_db.sh`** : Script bash automatique pour l'initialisation
+- **`sql/schema.sql`** : Structure des tables uniquement
+- **`sql/test_data.sql`** : Données de test uniquement
+
+#### Utilisateurs de test inclus
+
+Après initialisation, vous pouvez tester avec :
+- **john.doe@example.com** (abonnement Premium)
+- **marie.durand@example.com** (abonnement Basique)
+- **pierre.martin@example.com** (abonnement VIP)

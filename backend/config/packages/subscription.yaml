@@ -1,0 +1,3 @@
+parameters:
+    subscription.standard.price: '%env(float:SUBSCRIPTION_STANDARD_PRICE)%'
+    subscription.premium.price: '%env(float:SUBSCRIPTION_PREMIUM_PRICE)%'

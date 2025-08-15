@@ -1,0 +1,6 @@
+parameters:
+    database.host: 'localhost'
+    database.name: '%env(MYSQL_DATABASE)%'
+    database.user: '%env(MYSQL_USER)%'
+    database.password: '%env(MYSQL_PASSWORD)%'
+    database.charset: 'utf8mb4'

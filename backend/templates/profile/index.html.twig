@@ -1,0 +1,309 @@
+{# templates/profile/index.html.twig #}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon Profil - Gestion des Paiements</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1, h2 {
+            color: #333;
+            text-align: center;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .search-form {
+            background: #e9f4ff;
+            border-left: 4px solid #007bff;
+        }
+        .form-row {
+            display: flex;
+            gap: 20px;
+            align-items: end;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            flex: 1;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button.secondary {
+            background-color: #6c757d;
+        }
+        button.secondary:hover {
+            background-color: #5a6268;
+        }
+        .user-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .info-item {
+            background: white;
+            padding: 15px;
+            border-radius: 4px;
+            border-left: 4px solid #007bff;
+        }
+        .info-label {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        .info-value {
+            font-weight: bold;
+            color: #333;
+        }
+        .subscription-item {
+            background: white;
+            padding: 15px;
+            border-radius: 4px;
+            border-left: 4px solid #28a745;
+            margin-bottom: 10px;
+        }
+        .subscription-inactive {
+            border-left-color: #dc3545;
+            opacity: 0.7;
+        }
+        .flash-messages {
+            margin-bottom: 20px;
+        }
+        .flash-success {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        .flash-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        .navigation {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .nav-link {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #6c757d;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            margin: 0 5px;
+        }
+        .nav-link:hover {
+            background-color: #5a6268;
+        }
+        .nav-link.active {
+            background-color: #007bff;
+        }
+        .card-form {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+        }
+        .security-note {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 15px;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Mon Profil - Gestion des Paiements</h1>
+    
+    <div class="navigation">
+        <a href="/subscribe" class="nav-link">Nouvelle Souscription</a>
+        <a href="/profile" class="nav-link active">Mon Profil</a>
+        <a href="/admin/users" class="nav-link">Administration</a>
+    </div>
+    
+    {# Affichage des messages flash #}
+    <div class="flash-messages">
+        {% for type, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="flash-{{ type }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endfor %}
+    </div>
+    
+    {# Formulaire de recherche par email #}
+    {% if not user %}
+        <div class="container search-form">
+            <h2>Rechercher mon profil</h2>
+            <p>Entrez votre adresse email pour accéder à votre profil et gérer vos informations de paiement.</p>
+            
+            <form method="post" action="/profile/search">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="search_email">Votre adresse email :</label>
+                        <input type="email" id="search_email" name="search_email" value="{{ search_email }}" placeholder="votre@email.com" required>
+                    </div>
+                    <div class="form-group">
+                        <button type="submit">Rechercher</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    {% endif %}
+    
+    {% if user %}
+        {# Informations utilisateur #}
+        <div class="container">
+            <h2>Informations du Compte</h2>
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">Nom</div>
+                    <div class="info-value">{{ user.name }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Email</div>
+                    <div class="info-value">{{ user.email }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Date d'inscription</div>
+                    <div class="info-value">{{ user.created_at|date('d/m/Y') }}</div>
+                </div>
+                {% if user.updated_at %}
+                <div class="info-item">
+                    <div class="info-label">Dernière mise à jour</div>
+                    <div class="info-value">{{ user.updated_at|date('d/m/Y H:i') }}</div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        {# Abonnements actifs #}
+        {% if user_subscriptions|length > 0 %}
+        <div class="container">
+            <h2>Mes Abonnements</h2>
+            {% for subscription in user_subscriptions %}
+                <div class="subscription-item {{ subscription.active ? '' : 'subscription-inactive' }}">
+                    <strong>{{ subscription.subscription_name }}</strong> - {{ subscription.price }} €
+                    <br>
+                    <small>
+                        Début : {{ subscription.start_date|date('d/m/Y') }}
+                        | Prochain paiement : {{ subscription.next_payment_date|date('d/m/Y') }}
+                        | Engagement jusqu'au : {{ subscription.end_engagement_date|date('d/m/Y') }}
+                        {% if not subscription.active %}| <span style="color: #dc3545;">Inactif</span>{% endif %}
+                    </small>
+                </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        {# Formulaire de mise à jour de la carte #}
+        <div class="container card-form">
+            <h2>Mettre à jour ma Carte Bancaire</h2>
+            
+            <div class="security-note">
+                🔒 Vos informations de paiement sont sécurisées et transmises de manière chiffrée.
+                Nous ne stockons pas les détails complets de votre carte bancaire.
+            </div>
+            
+            <form method="post">
+                <input type="hidden" name="email" value="{{ user.email }}">
+                
+                <div class="form-group">
+                    <label for="holder_name">Nom du porteur (optionnel) :</label>
+                    <input type="text" id="holder_name" name="holder_name" value="{{ user.name }}" placeholder="Nom sur la carte">
+                    <small style="color: #666;">Si différent de votre nom de compte</small>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="card_number">Nouveau numéro de carte * :</label>
+                        <input type="text" id="card_number" name="card_number" placeholder="1234 5678 9012 3456" maxlength="19" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="cvv">Nouveau CVV * :</label>
+                        <input type="text" id="cvv" name="cvv" placeholder="123" maxlength="4" required>
+                    </div>
+                </div>
+                
+                <button type="submit">Mettre à jour ma carte</button>
+                <button type="button" class="secondary" onclick="clearForm()">Annuler</button>
+            </form>
+        </div>
+    {% endif %}
+    
+    <script>
+        // Formatage automatique du numéro de carte
+        document.getElementById('card_number')?.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            value = value.replace(/(\d{4})(?=\d)/g, '$1 ');
+            e.target.value = value;
+        });
+        
+        // Validation du CVV (chiffres seulement)
+        document.getElementById('cvv')?.addEventListener('input', function(e) {
+            e.target.value = e.target.value.replace(/\D/g, '');
+        });
+        
+        function clearForm() {
+            document.getElementById('card_number').value = '';
+            document.getElementById('cvv').value = '';
+            document.getElementById('holder_name').value = '{{ user.name ?? "" }}';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,137 @@
+{# templates/subscribe/index.html.twig #}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Souscription</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        form {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        div {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+        }
+        button {
+            width: 100%;
+            background-color: #007bff;
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .flash-messages {
+            margin-bottom: 20px;
+        }
+        .flash-success {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        .flash-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Choisir un abonnement</h1>
+    
+    <div style="text-align: center; margin-bottom: 20px;">
+        <a href="/profile" style="display: inline-block; padding: 8px 16px; background-color: #6c757d; color: white; text-decoration: none; border-radius: 4px; font-size: 14px;">Gérer mon profil</a>
+    </div>
+    
+    {# Affichage des messages flash #}
+    <div class="flash-messages">
+        {% for type, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="flash-{{ type }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endfor %}
+    </div>
+    
+    <form method="post" action="/subscribe">
+        <div>
+            <label for="name">Nom :</label>
+            <input type="text" id="name" name="name" placeholder="Votre nom complet" required>
+        </div>
+        
+        <div>
+            <label for="email">Email :</label>
+            <input type="email" id="email" name="email" placeholder="votre@email.com" required>
+        </div>
+        
+        <div>
+            <label for="subscription_id">Abonnement :</label>
+            <select id="subscription_id" name="subscription_id" required>
+                <option value="">-- Choisir un abonnement --</option>
+                {% for sub in subscriptions %}
+                    <option value="{{ sub.id }}">
+                        {{ sub.name }} - {{ sub.price }} € 
+                        (engagement {{ sub.engagement_months }} mois, paiement tous les {{ sub.period_days }} jours)
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div>
+            <label for="card_number">Numéro de carte :</label>
+            <input type="text" id="card_number" name="card_number" placeholder="1234 5678 9012 3456" required>
+        </div>
+        
+        <div>
+            <label for="cvv">CVV :</label>
+            <input type="text" id="cvv" name="cvv" placeholder="123" required maxlength="4">
+        </div>
+        
+        <button type="submit">Payer</button>
+    </form>
+</body>
+</html>
